@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App - Easy Tutorials</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="card">
+        <div class="search">
+            <input type="text" placeholder="Enter city name" spellcheck="false">
+            <button><img src="images/search.png" alt="Search"></button>
+        </div>
+        <div>
+            <div class="error">
+                <p>Invalid city name</p>
+        </div>
+        <div class="weather">
+            <img src="images/rain.png" class="weather-icon" alt="Weather Icon">
+            <h1 class="temp">22°C</h1>
+            <h2 class="city">New York</h2>
+
+            <div class="details">
+                <div class="col">
+                    <img src="images/humidity.png" alt="Humidity Icon">
+                    <p class="humidity">50%</p>
+                    <p>Humidity</p>
+                </div>
+                <div class="col">
+                    <img src="images/wind.png" alt="Wind Icon">
+                    <p class="wind">15 km/h</p>
+                    <p>Wind Speed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+    <div class="unit-toggle">
+        <button>Switch to Fahrenheit</button>
+    </div>
+    
+    <script>
+       const apiKey = "06dd9e33e35664adb10aecbc7d507955";
+const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
+
+const searchBox = document.querySelector(".search input");
+const searchBtn = document.querySelector(".search button");
+const weatherIcon = document.querySelector(".weather-icon");
+const unitToggle = document.querySelector(".unit-toggle button");  // The toggle button
+
+let isCelsius = true;  // To keep track of whether we are using Celsius or Fahrenheit
+
+// Function to fetch and display weather data
+async function checkWeather(city = "New York") {
+    const units = isCelsius ? "metric" : "imperial";  // Use "metric" for Celsius, "imperial" for Fahrenheit
+    const response = await fetch(`${apiUrl}${city}&appid=${apiKey}&units=${units}`);
+
+    if (response.status === 404) {
+        document.querySelector(".error").style.display = "block";
+        document.querySelector(".weather").style.display = "none";
+    } else {
+        const data = await response.json();
+        displayWeather(data);  // Pass the data to the display function
+    }
+}
+
+// Function to display the weather data
+function displayWeather(data) {
+    const tempUnit = isCelsius ? "°C" : "°F";  // Set unit based on isCelsius flag
+    const speedUnit = isCelsius ? "km/h" : "mph";  // Set wind speed unit
+
+    // Update the HTML with the fetched data
+    document.querySelector(".city").innerHTML = data.name;
+    document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + tempUnit;
+    document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
+    document.querySelector(".wind").innerHTML = data.wind.speed + " " + speedUnit;
+
+    // Update weather icon based on conditions
+    switch (data.weather[0].main.toLowerCase()) {
+        case "clouds":
+            weatherIcon.src = "images/clouds.png";
+            break;
+        case "clear":
+            weatherIcon.src = "images/clear.png";
+            break;
+        case "rain":
+            weatherIcon.src = "images/rain.png";
+            break;
+        case "drizzle":
+            weatherIcon.src = "images/drizzle.png";
+            break;
+        case "mist":
+            weatherIcon.src = "images/mist.png";
+            break;
+        default:
+            weatherIcon.src = "images/default.png";  // Fallback icon
+            break;
+    }
+
+    // Display the weather data and hide the error
+    document.querySelector(".weather").style.display = "block";
+    document.querySelector(".error").style.display = "none";
+}
+
+// Function to toggle between Celsius and Fahrenheit
+function switchUnits() {
+    isCelsius = !isCelsius;  // Toggle the unit system
+    const currentCity = document.querySelector(".city").innerHTML;
+
+    // Update the button text accordingly
+    unitToggle.innerHTML = isCelsius ? "Switch to Fahrenheit" : "Switch to Celsius";
+
+    // Re-fetch the weather data with the new unit
+    checkWeather(currentCity);
+}
+
+// Event listener for the search button
+searchBtn.addEventListener("click", () => {
+    checkWeather(searchBox.value);
+});
+
+// Event listener for the unit toggle button
+unitToggle.addEventListener("click", switchUnits);
+
+// Fetch weather data for the default city on page load
+checkWeather();
+</script>
+
+</body>
+</html>
